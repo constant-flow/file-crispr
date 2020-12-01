@@ -18,4 +18,6 @@ file_erase_string("test.txt", "comment", 1)
 file_copy("lorem.txt", "no-comment.txt")
 
 file_write_string("write-test.txt", "success")
-file_append_string_to_string("no-comment.txt", "This", "This", -1)
+file_prepend_string_to_string("no-comment.txt", "This", "Wahtsasdasd", -1)
+
+file_comment_line("test.txt", 2)

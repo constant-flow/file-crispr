@@ -62,6 +62,54 @@ def file_find_string_pos(filepath, search_string, start=0):
                 return -1
 
 
+def file_comment_line(filepath,
+                      line_to_comment_out,
+                      line_comment_string=0,
+                      first_line_id_is_zero=False,
+                      temporary_filename=temporary_filename):
+
+    print("comment line")
+
+    comment_symbol = ""
+    if line_comment_string == 0:
+        # calculate line comment string from extentions
+        # TODO add function to make filetype to fitting line-comment string
+        comment_symbol = "# "
+    else:
+        comment_symbol = line_comment_string
+
+    # file_remove(temporary_filename)
+    file_output = open(temporary_filename, "w")
+
+    # line indexing
+    current_line = 0
+    if not first_line_id_is_zero:
+        current_line = 1
+
+    comment_done = False
+
+    with open(filepath) as file_input:
+        while True:
+            read_char = file_input.read(1)
+            if not read_char:
+                break
+
+            if not comment_done and current_line == line_to_comment_out:
+                comment_done = True
+                file_output.write(comment_symbol)
+
+            if read_char == '\n':
+                current_line = current_line + 1
+
+            file_output.write(read_char)
+
+    file_output.close()
+
+    file_remove(filepath)
+    file_copy(temporary_filename, filepath)
+    file_remove(temporary_filename)
+
+
 def file_transfer_bytes_n_to_m(filepath_source, filepath_target, n, m, mode=1):
     """Transfers all bytes/chars from n (inclusive) to m (exclusive) from file source to target\n
     mode: if 1 (default) content will be appended, if 0 content will be overwritten"""
@@ -141,12 +189,10 @@ def file_prepend_string_to_string(filepath,
     times_to_repeat: how often should the string be be prepended (=1 once (default), >0 defines the number of prepend actions, <0 prepends at every occurence)\n
     """
 
-    marked_count = crispr_mark(filepath, string_to_find, times_to_repeat)
-
-    for i in range(marked_count):
-        file_replace_string(filepath, get_numbered_marker(i),
-                            string_to_prepend + string_to_find, 1,
-                            temporary_filename)
+    return file_pre_and_append_string_to_string(filepath, string_to_find,
+                                                string_to_prepend, "",
+                                                times_to_repeat,
+                                                temporary_filename)
 
 
 def file_append_string_to_string(filepath,
@@ -159,12 +205,31 @@ def file_append_string_to_string(filepath,
     times_to_repeat: how often should the string be be appended (=1 once (default), >0 defines the number of append actions, <0 appends at every occurence)\n
     """
 
+    return file_pre_and_append_string_to_string(filepath, string_to_find, "",
+                                                string_to_append,
+                                                times_to_repeat,
+                                                temporary_filename)
+
+
+def file_pre_and_append_string_to_string(
+        filepath,
+        string_to_find,
+        string_to_prepend,
+        string_to_append,
+        times_to_repeat=1,
+        temporary_filename=temporary_filename):
+    """
+    searches a file for a string and appends a provided string\n
+    times_to_repeat: how often should the string be be appended (=1 once (default), >0 defines the number of append actions, <0 appends at every occurence)\n
+    """
+
     marked_count = crispr_mark(filepath, string_to_find, times_to_repeat)
 
     for i in range(marked_count):
-        file_replace_string(filepath, get_numbered_marker(i),
-                            string_to_find + string_to_append, 1,
-                            temporary_filename)
+        file_replace_string_once(
+            filepath, get_numbered_marker(i),
+            string_to_prepend + string_to_find + string_to_append,
+            temporary_filename)
 
 
 def file_replace_string(filepath,
@@ -176,6 +241,7 @@ def file_replace_string(filepath,
     replaces a string in a file\n
     times_to_replace: how often should the string be removed (=1 remove once (default), >0 defines the number of occurences to remove, <0 remove all occurences)\n
     temporary_filename: filename to temporarily save the output\n
+    returns the ampunt of replacements/occurences
     """
 
     marked_count = crispr_mark(filepath, string_to_replace, times_to_replace)
@@ -184,13 +250,16 @@ def file_replace_string(filepath,
         file_replace_string_once(filepath, get_numbered_marker(i),
                                  string_to_place, temporary_filename)
 
+    return marked_count
+
 
 def file_replace_string_once(filepath,
                              string_to_replace,
                              string_to_place,
                              temporary_filename=temporary_filename):
     """
-    searches a file and replaces the first occurence of `string_to_replace` with `string_to_place`
+    searches a file and replaces the first occurence of `string_to_replace` with `string_to_place\n`
+    returns 1 if the string was found else 0
     """
 
     replaced_counter = 0
