@@ -3,6 +3,7 @@
 from shutil import copyfile
 import os
 import math
+import pathlib
 
 fallbackValue = "(content not found)"
 temporary_filename = "___temp_crispr_file___"
@@ -27,6 +28,21 @@ def file_read_line(filepath, lineNumber, fallback=fallbackValue):
             if count == lineNumber:
                 return line
     return fallback
+
+
+def file_get_extension(filepath,
+                       with_extension_dot=False,
+                       only_last_extension=False):
+    """returns the extension of a file by a provided filepath\n
+    with_extension_dot (default: False): True, will include the dot e.g. '.txt'\n
+    only_last_extension (default: False): True, returns only the last extension e.g. 'gz' instead of 'tar.gz'
+    """
+
+    if only_last_extension:
+        return pathlib.Path(filepath).suffix[(0 if with_extension_dot else 1):]
+    else:
+        return "".join(
+            pathlib.Path(filepath).suffixes)[(0 if with_extension_dot else 1):]
 
 
 def file_write_string(filepath, string_to_write, mode=1):
@@ -62,19 +78,53 @@ def file_find_string_pos(filepath, search_string, start=0):
                 return -1
 
 
+def get_line_comment_symbol_for_filetype(extension_without_dot,
+                                         fallback_comment_symbol,
+                                         trailing_symbol=" "):
+    extensions = {
+        "js": "//",
+        "jsx": "//",
+        "sw": "//",
+        "java": "//",
+        "h": "//",
+        "c": "//",
+        "hpp": "//",
+        "cpp": "//",
+        "md": "#",
+        "r": "#",
+        "php": "#",
+        "ps": "#",
+        "py": "#",
+        "rb": "#",
+        "sql": "--",
+        "scpt": "--",
+        "scptd": "--",
+        "applescript": "--",
+        "lua": "--",
+        "tex": "%",
+        "m": "%",
+        "basic": "REM",
+    }
+
+    return extensions.get(extension_without_dot,
+                          fallback_comment_symbol) + trailing_symbol
+
+
 def file_comment_line(filepath,
                       line_to_comment_out,
                       line_comment_string=0,
                       first_line_id_is_zero=False,
                       temporary_filename=temporary_filename):
-
-    print("comment line")
+    """Comments on line out in a provided file\n
+    line_to_comment_out: specifies the line to comment\n
+    line_comment_string: how to comment out, 0 is default will be base it on the file type. Else provide the prefix that comments the line out\n
+    first_line_id_is_zero: default is False. If true first line is indexed by line_to_comment_out=0.
+    """
 
     comment_symbol = ""
     if line_comment_string == 0:
-        # calculate line comment string from extentions
-        # TODO add function to make filetype to fitting line-comment string
-        comment_symbol = "# "
+        extension = file_get_extension(filepath)
+        comment_symbol = get_line_comment_symbol_for_filetype(extension, "//?")
     else:
         comment_symbol = line_comment_string
 

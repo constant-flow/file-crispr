@@ -6,13 +6,14 @@ Python library to manipulate files the easy way.
 
 - find `string` in file and ...
 
-  - ... ✅ return position
+  - ... ✅ return position (`file_find_string_pos`)
   - ... ✅ erase (`file_erase_string`)
-  - ... comment out
+  - ... ✅ comment out (`file_comment_line`)
   - ... comment in
-  - ... ✅ replace
+  - ... ✅ replace (`file_replace_string`)
   - ... ✅ prepend (`file_prepend_string_to_string`)
   - ... ✅ append (`file_append_string_to_string`)
+  - ... ✅ prepend & append (`file_pre_and_append_string_to_string`)
 
 - find `file` and
 
@@ -34,3 +35,4 @@ Python library to manipulate files the easy way.
 - ✅ a range of characters from one file to another (`file_transfer_bytes_n_to_m`)
 
 - ✅ remove a file (`file_remove`)
+- ✅ get extension of file (`file_get_extension`)
