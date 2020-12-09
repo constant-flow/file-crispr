@@ -17,16 +17,21 @@ def modeToFileWrite(mode):
     return file_write_mode
 
 
-def file_read_line(filepath, lineNumber, fallback=fallbackValue):
+def file_read_line(filepath,
+                   lineNumber,
+                   first_line_id_is_zero=False,
+                   fallback=fallbackValue):
     """Reads the content of a line from a file.\n
     If not existent it returns the provided fallback value"""
-    count = -1
+    count = 0
+    if first_line_id_is_zero:
+        count: -1
     with open(filepath) as fp:
         Lines = fp.readlines()
         for line in Lines:
             count += 1
             if count == lineNumber:
-                return line
+                return line.replace("\n", "")
     return fallback
 
 
@@ -110,23 +115,14 @@ def get_line_comment_symbol_for_filetype(extension_without_dot,
                           fallback_comment_symbol) + trailing_symbol
 
 
-def file_comment_line(filepath,
-                      line_to_comment_out,
-                      line_comment_string=0,
+def file_replace_line(filepath,
+                      line_nr_to_replace,
+                      new_line_content,
                       first_line_id_is_zero=False,
                       temporary_filename=temporary_filename):
-    """Comments on line out in a provided file\n
-    line_to_comment_out: specifies the line to comment\n
-    line_comment_string: how to comment out, 0 is default will be base it on the file type. Else provide the prefix that comments the line out\n
-    first_line_id_is_zero: default is False. If true first line is indexed by line_to_comment_out=0.
     """
-
-    comment_symbol = ""
-    if line_comment_string == 0:
-        extension = file_get_extension(filepath)
-        comment_symbol = get_line_comment_symbol_for_filetype(extension, "//?")
-    else:
-        comment_symbol = line_comment_string
+    Replaces the content of one line (specified by number), with a new content (new_line_content)
+    """
 
     # file_remove(temporary_filename)
     file_output = open(temporary_filename, "w")
@@ -136,7 +132,8 @@ def file_comment_line(filepath,
     if not first_line_id_is_zero:
         current_line = 1
 
-    comment_done = False
+    line_start_found = False
+    copy_chars = True
 
     with open(filepath) as file_input:
         while True:
@@ -144,20 +141,79 @@ def file_comment_line(filepath,
             if not read_char:
                 break
 
-            if not comment_done and current_line == line_to_comment_out:
-                comment_done = True
-                file_output.write(comment_symbol)
+            if not line_start_found and current_line == line_nr_to_replace:
+                line_start_found = True
+                copy_chars = False
+                file_output.write(new_line_content)
+                file_output.write("\n")
+
+            if line_start_found and current_line == line_nr_to_replace + 1:
+                copy_chars = True
 
             if read_char == '\n':
                 current_line = current_line + 1
 
-            file_output.write(read_char)
+            if copy_chars:
+                file_output.write(read_char)
 
     file_output.close()
 
     file_remove(filepath)
     file_copy(temporary_filename, filepath)
     file_remove(temporary_filename)
+
+
+def file_line_comment_symbol(filepath, line_comment_string=0):
+    # automatic comment symbol based on extention
+    if line_comment_string == 0:
+        extension = file_get_extension(filepath)
+        return get_line_comment_symbol_for_filetype(extension, "//?")
+    else:  # manually specified char/string to start a comment
+        return line_comment_string
+
+
+def file_comment_line(filepath,
+                      line_to_comment_out,
+                      line_comment_string=0,
+                      first_line_id_is_zero=False,
+                      temporary_filename=temporary_filename):
+    """Comments on line out in a provided file\n
+    line_to_comment_out: specifies the line number to comment\n
+    line_comment_string: how to comment out, 0 is default will base it on the file type. Else provide the prefix that will comment the line out\n
+    first_line_id_is_zero: default is False. If true first line is indexed by line_to_comment_out=0.
+    """
+
+    comment_symbol = file_line_comment_symbol(filepath, line_comment_string)
+    content_commented_line = comment_symbol + file_read_line(
+        filepath, line_to_comment_out, first_line_id_is_zero)
+
+    file_replace_line(filepath, line_to_comment_out, content_commented_line,
+                      first_line_id_is_zero, temporary_filename)
+
+
+def file_uncomment_line(filepath,
+                        line_to_uncomment,
+                        line_comment_string=0,
+                        first_line_id_is_zero=False,
+                        temporary_filename=temporary_filename):
+    """Uncomments a line in in a provided file\n
+    line_to_uncomment: specifies the line number to uncomment\n
+    line_comment_string: how to uncomment, 0 is default will base it on the file type. Else provide the prefix that comments the line currently\n
+    first_line_id_is_zero: default is False. If true first line is indexed by line_to_comment_out=0.
+    """
+
+    comment_symbol = file_line_comment_symbol(filepath, line_comment_string)
+    content_of_line = file_read_line(filepath, line_to_uncomment,
+                                     first_line_id_is_zero)
+    if content_of_line == "": return
+
+    new_content_of_line = content_of_line.replace(comment_symbol, "")
+    # trim of spaces in the beginning of the line
+    while new_content_of_line[0] == " ":
+        new_content_of_line = new_content_of_line[1:]
+
+    file_replace_line(filepath, line_to_uncomment, new_content_of_line,
+                      first_line_id_is_zero, temporary_filename)
 
 
 def file_transfer_bytes_n_to_m(filepath_source, filepath_target, n, m, mode=1):

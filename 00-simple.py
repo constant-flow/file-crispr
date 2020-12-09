@@ -1,6 +1,6 @@
 from lib.filecrispr import *
 
-print(file_read_line("lorem.txt", 0))
+print(file_read_line("lorem.txt", 1))
 print(file_read_line("lorem.txt", 4))
 
 file_copy("lorem.txt", "test.txt")
@@ -21,3 +21,7 @@ file_write_string("write-test.txt", "success")
 file_prepend_string_to_string("no-comment.txt", "This", "Wahtsasdasd", -1)
 
 file_comment_line("test.txt", 2)
+# file_replace_line("test.txt", 2, "˜˜replaced line˜˜")
+file_uncomment_line("test.txt", 2)
+
+file_uncomment_line("test.txt", 7, "#")
