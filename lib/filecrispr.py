@@ -4,6 +4,8 @@ from shutil import copyfile
 import os
 import math
 import pathlib
+from datetime import datetime
+from pathlib import Path
 
 fallbackValue = "(content not found)"
 temporary_filename = "___temp_crispr_file___"
@@ -48,6 +50,16 @@ def file_get_extension(filepath,
     else:
         return "".join(
             pathlib.Path(filepath).suffixes)[(0 if with_extension_dot else 1):]
+
+
+def file_get_filename(filepath):
+    path = Path(filepath)
+    return path.stem
+
+
+def file_get_directory(filepath):
+    path = Path(filepath)
+    return path.parent
 
 
 def file_write_string(filepath, string_to_write, mode=1):
@@ -405,3 +417,23 @@ def file_copy(file_path_source, file_path_destination):
 def file_remove(file_to_remove):
     """Removes a file at path `file_to_remove`"""
     os.remove(file_to_remove)
+
+
+def file_replace(file_path_source, file_path_destination):
+    file_copy(file_path_source, file_path_destination)
+
+
+def file_backup(file_to_backup, backup_extension=".bak"):
+    dateFormatted = datetime.now().strftime("%Y-%m-%d_%H-%M")
+
+    filedir = file_get_directory(file_to_backup).as_posix()
+    if filedir == ".":
+        filedir = ""
+    else:
+        filedir = filedir + os.sep
+    filename = file_get_filename(file_to_backup)
+    extension = file_get_extension(file_to_backup, True)
+
+    filepath_backup = filedir + filename + extension + "." + dateFormatted + backup_extension
+
+    file_copy(file_to_backup, filepath_backup)

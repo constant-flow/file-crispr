@@ -25,3 +25,8 @@ file_comment_line("test.txt", 2)
 file_uncomment_line("test.txt", 2)
 
 file_uncomment_line("test.txt", 7, "#")
+
+file_replace("lorem.txt", "tst.txt")
+
+file_backup("lorem.txt")
+file_backup("folder/lorem.txt")

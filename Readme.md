@@ -23,14 +23,14 @@ Python library to manipulate files the easy way.
 
 - specify a `file` and
 
-  - ... replace
-  - ... backup and replace
+  - ... ✅ replace
+  - ... ✅ backup
   - ... move
-  - ✅ copy it (`file_copy`)
-  - ✅ write/append a string to a file (`file_write_string`)
-  - ✅ write/append a range of characters to another file (`file_transfer_bytes_n_to_m`)
-  - ✅ remove it (`file_remove`)
-  - ✅ get the extension (`file_get_extension`)
+  - ... ✅ copy it (`file_copy`)
+  - ... ✅ write/append a string to a file (`file_write_string`)
+  - ... ✅ write/append a range of characters to another file (`file_transfer_bytes_n_to_m`)
+  - ... ✅ remove it (`file_remove`)
+  - ... ✅ get the extension (`file_get_extension`)
 
 - read in `file ` ...
 
